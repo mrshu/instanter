@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+$HOME/.instanter
+
+OPTS="--cookies=on --load-cookies=cookie.txt --keep-session-cookies"\
+" --save-cookies=cookie.txt"
+
+URL_LOGIN=http://www.instapaper.com/user/login
+URL_LIST=http://www.instapaper.com/u
+URL=http://www.instapaper.com
+
+wget $OPTS -qO- --post-data "username=$user&password=$pass" $URL_LOGIN>/dev/null
+
+mkdir /tmp/instanter > /dev/null
+
+wget $OPTS $URL_LIST
+
+for x in $(wget $OPTS -qO- $URL_LIST | grep "/go/" | sed -e 's#.*href="/go/##g'|
+	sed -e 's#/text"##g')  
+do
+	echo Saving $x;
+	wget --quiet $OPTS -O /tmp/instanter/$x.html $URL/go/$x/text > /dev/null
+	wkhtmltopdf /tmp/instanter/$x.html /tmp/instanter/$x.pdf
+done
+
+
+
