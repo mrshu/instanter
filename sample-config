@@ -1,0 +1,5 @@
+#!/bin/bash
+INSTUSER=
+INSTPASS=
+INSTDIR=~/instapaper/
+INSTVIEWER=xdg-open

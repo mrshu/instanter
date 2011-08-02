@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-$HOME/.instanter
+source $HOME/.instanter
 
 OPTS="--cookies=on --load-cookies=cookie.txt --keep-session-cookies"\
 " --save-cookies=cookie.txt"
@@ -10,19 +9,131 @@ URL_LOGIN=http://www.instapaper.com/user/login
 URL_LIST=http://www.instapaper.com/u
 URL=http://www.instapaper.com
 
-wget $OPTS -qO- --post-data "username=$user&password=$pass" $URL_LOGIN>/dev/null
 
-mkdir /tmp/instanter > /dev/null
 
-wget $OPTS $URL_LIST
+function log
+{
+	echo "-> $@"
+}
 
-for x in $(wget $OPTS -qO- $URL_LIST | grep "/go/" | sed -e 's#.*href="/go/##g'|
-	sed -e 's#/text"##g')  
-do
-	echo Saving $x;
-	wget --quiet $OPTS -O /tmp/instanter/$x.html $URL/go/$x/text > /dev/null
-	wkhtmltopdf /tmp/instanter/$x.html /tmp/instanter/$x.pdf
-done
+function login
+{
+	wget $OPTS -qO- --post-data \
+		"username=$INSTUSER&password=$INSTPASS" \
+		$URL_LOGIN>/dev/null
+}
 
+function usage
+{
+	echo -e "usage: instanter <command>\n\n"
+	echo "Useful commands:"
+	echo -e "    checkout\tDownloads new articles and converts them to PDF"
+	echo -e "    list\tLists downloaded articles"
+}
+
+
+function title
+{
+	echo "$1" | sed 's/\\u....//g' | tr "[:upper:]" "[:lower:]"  \
+	| sed 's/[^_a-zA-Z0-9  -]//g' | sed -e "s/_/-/g;s/ /-/g" \
+	| cut -f 1-6 -d - | sed "s/-$//g"
+
+}
+
+function download
+{
+	id=$1
+	wget --quiet $OPTS -O /tmp/instanter/$id.html $URL/go/$id/text > /dev/null
+}
+
+function convert
+{
+	id=$1
+	out=$2
+	wkhtmltopdf /tmp/instanter/$id.html $INSTDIR/$out.pdf
+}
+
+
+function load
+{
+	IFS='='
+	tmp=0
+	echo "Running checkout"
+
+	for x in `echo $1 | grep show_share_panel |
+sed "s/.*'\([0-9]*\)','\(.[^\']*\)','\(.*\)','');\">Share<\/a>/\1_\3=/g"`
+	do
+		x=`echo $x| sed '{:q;N;s/\n//g;t q}'`
+		t=`title $x| sed '{:q;N;s/\n//g;t q}'`
+		if [ ! -f $INSTDIR/$t.pdf ];
+		then
+			id=`echo $x | sed "s/^\([0-9]*\)\(.*\)/\1/g"`
+			echo "Saving $id to '$t'"
+			download $id
+			convert $id $t
+			let tmp++
+		fi
+	done
+	
+	if [ $tmp -eq 0 ];
+	then
+		 log "Everything up to date"
+	fi
+
+	
+}
+
+function list
+{
+	i=0
+	for article in `ls -1 $INSTDIR | tr '\n' ' '`
+	do
+		printf '%%%x %s\n' $i $article
+		let i++
+	done
+
+}
+
+function config
+{
+	case $2 in
+		user|username)
+			sed "s/INSTUSER=.*/INSTUSER=$3/" -i $HOME/.instanter
+			log "Username changed to $3"
+			;;
+		pass|password)
+			sed "s/INSTPASS=.*/INSTPASS=$3/" -i $HOME/.instanter
+			log "Password changed"
+			;;
+		viewer)
+			sed "s/INSTVIEWER=.*/INSTVIEWER=$3/" -i $HOME/.instanter
+			log "PDF viewer changed to $3"
+			;;
+		dir|directory)
+			sed "s#INSTDIR=.*#INSTDIR=$3#" -i $HOME/.instanter
+			log "Directory for PDF changed to $3"
+			;;
+	esac
+}
+
+case $1 in
+	checkout)
+		login
+		load "$(wget $OPTS -qO- $URL_LIST)"
+		;;
+	ls|list)
+		list
+		;;
+	config)
+		config $@
+		;;
+	%[0-9]*)
+		echo $1
+		;;
+	*)
+		usage
+		;;
+esac
+	
 
 
