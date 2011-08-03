@@ -9,7 +9,7 @@ URL_LOGIN=http://www.instapaper.com/user/login
 URL_LIST=http://www.instapaper.com/u
 URL=http://www.instapaper.com
 
-
+mkdir -p /tmp/instanter
 
 function log
 {
@@ -18,8 +18,10 @@ function log
 
 function webget
 {
-	wget --cookies=on --load-cookies=$INSTDIR/cookie.txt\
-		--keep-session-cookies --save-cookies=$INSTDIR/cookie.txt $@
+	wget --quiet --cookies=on --load-cookies=$INSTDIR/cookie.txt\
+		--keep-session-cookies --save-cookies=$INSTDIR/cookie.txt\
+		$@
+		
 }
 
 
@@ -27,7 +29,7 @@ function login
 {
 	webget -qO- --post-data \
 		"username=$INSTUSER&password=$INSTPASS" \
-		$URL_LOGIN
+		$URL_LOGIN>/dev/null
 }
 
 function usage
@@ -50,7 +52,7 @@ function title
 function download
 {
 	id=$1
-	webget $URL/go/$id/text -O /tmp/instanter/$id.html > /dev/null
+	webget $URL/go/$id/text -O /tmp/instanter/$id.html
 }
 
 function convert
