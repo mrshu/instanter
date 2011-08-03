@@ -93,7 +93,7 @@ sed "s/.*'\([0-9]*\)','\(.[^\']*\)','\(.*\)','');\">Share<\/a>/\1_\3=/g"`
 function list
 {
 	i=0
-	for article in `ls -1 -r $INSTDIR | tr '\n' ' '`
+	for article in `ls -1 -r $INSTDIR| grep .pdf | tr '\n' ' '`
 	do
 		printf '%%%x %s\n' $i $article
 		let i++
@@ -126,7 +126,7 @@ function config
 function view
 {
 	id=`printf '%d' 0x$1`
-	articles=(`ls -1 -r $INSTDIR | tr '\n' ' '`)
+	articles=(`ls -1 -r $INSTDIR| grep .pdf | tr '\n' ' '`)
 	$INSTVIEWER $INSTDIR/${articles[id]}
 
 }
