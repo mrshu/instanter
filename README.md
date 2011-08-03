@@ -60,26 +60,22 @@ Instanter provides two basic commands
 1. `checkout`
   - it checks for newly added articles, downloads them and converts them to PDF
 
-  	  $ instanter checkout
+		$ instanter checkout
 
 2. `list`
   - lists downloaded files and assignes uniqe id to each of them
 
-
-	  $ instanter list
+		$ instanter list
 
 
 3. `view`
   - opens the selected article in viewer application
 
-  	  $ instanter view 3
+		$ instanter view 3
 
   - this command can be also shortcuted to
 
-  	  $ instanter %3
-
-
-
+		$ instanter %3
 
 
 Feedback
