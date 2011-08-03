@@ -8,3 +8,4 @@ config: sample-config
 install: instanter
 	install instanter $(DEST)/instanter
 
+all: config

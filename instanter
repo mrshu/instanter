@@ -2,8 +2,8 @@
 
 source $HOME/.instanter
 
-OPTS="--cookies=on --load-cookies=cookie.txt --keep-session-cookies"\
-" --save-cookies=cookie.txt"
+OPTS='--cookies=on --load-cookies=cookie.txt --keep-session-cookies'\
+' --save-cookies=cookie.txt'
 
 URL_LOGIN=http://www.instapaper.com/user/login
 URL_LIST=http://www.instapaper.com/u
@@ -16,11 +16,18 @@ function log
 	echo "-> $@"
 }
 
+function webget
+{
+	wget --cookies=on --load-cookies=$INSTDIR/cookie.txt\
+		--keep-session-cookies --save-cookies=$INSTDIR/cookie.txt $@
+}
+
+
 function login
 {
-	wget $OPTS -qO- --post-data \
+	webget -qO- --post-data \
 		"username=$INSTUSER&password=$INSTPASS" \
-		$URL_LOGIN>/dev/null
+		$URL_LOGIN
 }
 
 function usage
@@ -43,7 +50,7 @@ function title
 function download
 {
 	id=$1
-	wget --quiet $OPTS -O /tmp/instanter/$id.html $URL/go/$id/text > /dev/null
+	webget $URL/go/$id/text -O /tmp/instanter/$id.html > /dev/null
 }
 
 function convert
@@ -86,7 +93,7 @@ sed "s/.*'\([0-9]*\)','\(.[^\']*\)','\(.*\)','');\">Share<\/a>/\1_\3=/g"`
 function list
 {
 	i=0
-	for article in `ls -1 $INSTDIR | tr '\n' ' '`
+	for article in `ls -1 -r $INSTDIR | tr '\n' ' '`
 	do
 		printf '%%%x %s\n' $i $article
 		let i++
@@ -116,6 +123,14 @@ function config
 	esac
 }
 
+function view
+{
+	id=`printf '%d' 0x$1`
+	articles=(`ls -1 -r $INSTDIR | tr '\n' ' '`)
+	$INSTVIEWER $INSTDIR/${articles[id]}
+
+}
+
 case $1 in
 	checkout)
 		login
@@ -127,8 +142,12 @@ case $1 in
 	config)
 		config $@
 		;;
-	%[0-9]*)
-		echo $1
+	view)
+		view $2
+		;;	
+	%[0-9abcde]*)
+		id=`echo "$1" |sed 's/%//'`
+		view $id
 		;;
 	*)
 		usage

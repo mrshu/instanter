@@ -2,7 +2,7 @@ Instanter
 =========
 
 Instanter is a simple tool for storing your Instapaper articles offline in PDF
-format written in Bash.
+written in Bash.
 
 
 How to install
@@ -78,8 +78,13 @@ Instanter provides two basic commands
 
 
 
+
+
 Feedback
 --------
 
 Any type feedback can be send via GitHub, [twitter](http://twitter.com/mr__shu)
 or [email](mrshux@gmail.com)
+
+
+
